@@ -43,7 +43,7 @@ def conv_layer(x, conv_size, input_channels, output_channels):
 def cnn_model(x, n_classes=10):
     # preprocess input so that it works with the digits lib
     x = tf.reshape(x, shape=[-1, 28, 28, 1])
-    x = tf.image.grayscale_to_rgb(tf.image.resize_images(x, new_height=64, new_width=64))
+    x = tf.image.grayscale_to_rgb(tf.image.resize_images(x, size=(64,64)))
     # x = tf.reshape(x, shape=[-1, 64, 64, 3])
     print('in:', x)
 
@@ -64,14 +64,17 @@ def cnn_model(x, n_classes=10):
     fc = tf.reshape(data, [-1, flt_sz])
     fc = relu(fc)
     print('fc',0,fc)
-    fc = fully_connected(fc, flt_sz, 1024)
+    fc = fully_connected(fc, flt_sz, 2048)
     fc = relu(fc)
     print('fc', 1, fc)
 
 
+    fc = fully_connected(fc, 2048, n_classes)
+
+
     # out
     with tf.name_scope('output'):
-        output = fully_connected(fc, 1024, n_classes)
+        output = fc
     print('out', output)
     return output
 
@@ -82,7 +85,7 @@ def train_cnn(X, y, train=False, batch_size=128, hm_epochs=10):
     optimizer = tf.train.AdamOptimizer().minimize(cost)
 
     with tf.Session() as ses:
-        writer = tf.train.SummaryWriter('log-tensorboard/', ses.graph)
+        writer = tf.summary.FileWriter('log-tensorboard/', ses.graph)
         ses.run(tf.initialize_all_variables())
         if train:
             for epoch in range(hm_epochs):
@@ -104,7 +107,7 @@ with tf.name_scope('input'):
     x = tf.placeholder('float', [None, 784])
     y = tf.placeholder('float')
 
-train_cnn(x, y, True)
+train_cnn(x, y)
 
 
 
